@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Войти — BookSaaS{% endblock %}
+{% block body %}
+<div class="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+  <div class="w-full max-w-sm">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 mx-auto mb-4 relative">
+        <div class="absolute inset-0 bg-gradient-to-br from-violet-600 to-indigo-700 rounded-2xl shadow-lg shadow-violet-500/30 rotate-6 opacity-60"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl shadow-xl shadow-violet-500/40 flex items-center justify-center">
+          <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+      </div>
+      <h1 class="text-3xl font-serif font-bold text-white tracking-tight">Book<span class="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">SaaS</span></h1>
+      <p class="text-zinc-500 text-sm mt-1">Войдите в кабинет мастера</p>
+      <p class="text-zinc-600 text-xs mt-2">{{ trial_days }} дней trial · {{ monthly_price }}</p>
+    </div>
+
+    <!-- Card -->
+    <div class="bg-zinc-900 rounded-2xl border border-white/8 p-8 shadow-2xl animate-in">
+      <form method="POST" action="/login" class="space-y-5">
+        <div>
+          <label class="block text-sm font-medium text-zinc-400 mb-2">Логин</label>
+          <input type="text" name="username" required autocomplete="username"
+            placeholder="ваш_логин"
+            class="w-full bg-zinc-800 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-600
+                   focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30 transition-all"/>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-zinc-400 mb-2">Пароль</label>
+          <input type="password" name="password" required autocomplete="current-password"
+            placeholder="••••••••"
+            class="w-full bg-zinc-800 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-600
+                   focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30 transition-all"/>
+        </div>
+        <button type="submit"
+          class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 active:from-violet-700 active:to-indigo-700 text-white font-bold py-3.5 rounded-xl
+                 transition-all shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 mt-2">
+          Войти
+        </button>
+      </form>
+    </div>
+
+    <p class="text-center text-zinc-500 text-sm mt-6">
+      Нет аккаунта?
+      <a href="/register" class="text-violet-400 hover:text-violet-300 font-semibold">Зарегистрироваться</a>
+    </p>
+    <p class="text-center mt-3">
+      <a href="/landing" class="text-zinc-600 hover:text-zinc-400 text-xs transition-colors">← Главная страница</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

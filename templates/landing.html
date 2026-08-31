@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+{% block title %}BookSaaS — Онлайн-запись и CRM для мастеров{% endblock %}
+{% block head %}
+<style>
+:root {
+  --bg: #09090b;
+  --surface: #18181b;
+  --border: rgba(255,255,255,.08);
+  --accent: #f59e0b;
+  --accent-dim: rgba(245,158,11,.12);
+  --text: #fafafa;
+  --muted: #a1a1aa;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+@keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+@keyframes gridPulse { 0%,100%{opacity:.03} 50%{opacity:.06} }
+
+.hero-in > * { animation: fadeUp .7s cubic-bezier(.16,1,.3,1) both; }
+.hero-in > *:nth-child(2) { animation-delay:.1s }
+.hero-in > *:nth-child(3) { animation-delay:.2s }
+.hero-in > *:nth-child(4) { animation-delay:.3s }
+.hero-in > *:nth-child(5) { animation-delay:.4s }
+
+.reveal { opacity:0; transform:translateY(20px); transition:opacity .6s ease, transform .6s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+
+.text-gradient {
+  background: linear-gradient(135deg, #fff 0%, #fde68a 45%, #f59e0b 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.grid-bg {
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 64px 64px;
+  animation: gridPulse 6s ease infinite;
+}
+.card-lift {
+  transition: transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease, border-color .35s ease;
+}
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 48px rgba(0,0,0,.35);
+  border-color: rgba(245,158,11,.25);
+}
+.ticker-track { display:flex; width:max-content; animation:ticker 32s linear infinite; }
+@keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.mock-float { animation: floatY 5s ease-in-out infinite; }
+.badge-dot { box-shadow: 0 0 0 0 rgba(245,158,11,.5); animation: pulse 2s infinite; }
+@keyframes pulse { 70%{box-shadow:0 0 0 8px rgba(245,158,11,0)} 100%{box-shadow:0 0 0 0 rgba(245,158,11,0)} }
+.compare-check { color: #22c55e; }
+.compare-x { color: #52525b; }
+</style>
+{% endblock %}
+{% block body %}
+<div class="min-h-screen bg-[var(--bg)] text-[var(--text)] font-sans overflow-x-hidden">
+
+  <!-- NAV -->
+  <nav class="fixed top-0 inset-x-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/85 backdrop-blur-xl">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="/landing" class="text-lg font-serif font-bold tracking-tight">
+        Book<span class="text-amber-500">SaaS</span>
+      </a>
+      <div class="hidden md:flex items-center gap-8 text-sm text-zinc-400">
+        <a href="#features" class="hover:text-white transition-colors">Возможности</a>
+        <a href="#crm" class="hover:text-white transition-colors">CRM</a>
+        <a href="#how" class="hover:text-white transition-colors">Как работает</a>
+        <a href="#themes" class="hover:text-white transition-colors">Шаблоны</a>
+        <a href="#pricing" class="hover:text-white transition-colors">Тариф</a>
+        <a href="{{ support_url }}" target="_blank" class="hover:text-sky-400 transition-colors">Поддержка</a>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/login" class="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white transition-colors">Войти</a>
+        <a href="/register" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-sm font-bold transition-all shadow-lg shadow-amber-500/20">
+          Попробовать {{ trial_days }} дней
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="relative pt-28 pb-20 px-6 overflow-hidden">
+    <div class="absolute inset-0 grid-bg -z-10"></div>
+    <div class="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-amber-500/10 rounded-full blur-[120px] -z-10"></div>
+
+    <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
+      <div class="hero-in">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-400 text-xs font-semibold uppercase tracking-widest mb-6">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400 badge-dot"></span>
+          {{ trial_days }} дней бесплатно · затем {{ monthly_price }}
+        </div>
+        <h1 class="text-4xl sm:text-5xl lg:text-[3.25rem] font-serif font-bold leading-[1.08] tracking-tight mb-6">
+          <span class="text-gradient">Клиенты записываются сами.</span><br/>
+          Вы управляете бизнесом.
+        </h1>
+        <p class="text-lg text-zinc-400 leading-relaxed mb-8 max-w-lg">
+          Личная страница записи, умный календарь и база клиентов с историей визитов.
+          Без звонков, без переписок в директе, без комиссий за каждую запись.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-3 mb-10">
+          <a href="/register" class="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-xl transition-all shadow-xl shadow-amber-500/25 hover:scale-[1.02]">
+            Создать страницу
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+          </a>
+          <a href="#how" class="inline-flex items-center justify-center px-7 py-3.5 rounded-xl border border-[var(--border)] font-semibold text-zinc-200 hover:bg-white/5 transition-colors">
+            Смотреть демо
+          </a>
+        </div>
+        <div class="flex flex-wrap gap-6 text-sm text-zinc-500">
+          <span class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>{{ trial_days }} дней бесплатно</span>
+          <span class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>Затем {{ monthly_price }}</span>
+          <span class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>Настройка за 2 мин</span>
+        </div>
+      </div>
+
+      <!-- Dashboard mockup -->
+      <div class="relative mock-float reveal">
+        <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl overflow-hidden">
+          <div class="px-4 py-3 border-b border-[var(--border)] flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
+            <span class="ml-3 text-xs text-zinc-500 font-mono">booksaas.app/dashboard</span>
+          </div>
+          <div class="flex">
+            <div class="w-16 sm:w-20 border-r border-[var(--border)] p-3 space-y-3 hidden sm:block">
+              <div class="h-8 rounded-lg bg-amber-500/20"></div>
+              <div class="h-6 rounded-md bg-white/5"></div>
+              <div class="h-6 rounded-md bg-white/5"></div>
+              <div class="h-6 rounded-md bg-amber-500/30"></div>
+              <div class="h-6 rounded-md bg-white/5"></div>
+            </div>
+            <div class="flex-1 p-4 sm:p-5">
+              <p class="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-3">Клиенты</p>
+              <div class="space-y-2">
+                {% for name, visits, tag, rev in [('Анна К.', '8 визитов', 'VIP', '14 400'), ('Максим С.', '3 визита', 'Постоянный', '6 600'), ('Елена М.', '1 визит', 'Новый', '2 200')] %}
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-zinc-900/80 border border-white/5">
+                  <div class="w-9 h-9 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-sm">{{ name[0] }}</div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold truncate">{{ name }}</p>
+                    <p class="text-xs text-zinc-500">{{ visits }} · {{ tag }}</p>
+                  </div>
+                  <span class="text-xs font-bold text-amber-400">{{ rev }}</span>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="absolute -bottom-4 -left-4 px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-xl text-xs font-semibold">
+          <span class="text-green-400">+3</span> новых записи сегодня
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TICKER -->
+  <div class="border-y border-[var(--border)] py-3 bg-zinc-900/40 overflow-hidden">
+    <div class="ticker-track">
+      {% set professions = ['Барберы','Мастера маникюра','Массажисты','Визажисты','Косметологи','Тренеры','Психологи','Стоматологи','Стилисты','Тату-мастера','Бровисты','Подологи'] %}
+      {% for p in professions + professions %}
+      <span class="px-8 text-sm text-zinc-500 font-medium whitespace-nowrap">{{ p }}<span class="mx-4 text-zinc-700">·</span></span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <section class="py-16 px-6 reveal">
+    <div class="max-w-5xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {% for num, label, sub in [('2 мин', 'до первой записи', 'от регистрации'), ('24/7', 'онлайн-запись', 'без вашего участия'), ('CRM', 'база клиентов', 'история и заметки'), (trial_days ~ ' дн.', 'пробный период', 'затем ' ~ monthly_price)] %}
+      <div class="p-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] card-lift text-center">
+        <p class="text-3xl font-black text-amber-400 mb-1">{{ num }}</p>
+        <p class="font-semibold text-sm">{{ label }}</p>
+        <p class="text-xs text-zinc-500 mt-0.5">{{ sub }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="py-20 px-6 reveal">
+    <div class="max-w-5xl mx-auto">
+      <p class="text-amber-500 text-xs font-bold uppercase tracking-widest mb-3 text-center">Возможности</p>
+      <h2 class="text-3xl sm:text-4xl font-serif font-bold text-center mb-4">Всё для роста частной практики</h2>
+      <p class="text-zinc-400 text-center max-w-xl mx-auto mb-12">Не просто виджет записи — полноценная операционная система для мастера.</p>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for title, text, icon in [
+          ('Умный календарь', 'Клиент видит только свободные слоты. Конфликты и двойные записи исключены.', 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'),
+          ('CRM клиентов', 'История визитов, теги, заметки и доход по каждому клиенту в одном окне.', 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z'),
+          ('Аналитика', 'Доход, популярные услуги, источники записей и динамика по месяцам.', 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'),
+          ('12+ шаблонов', 'Готовые темы под любую нишу или свой бренд с настройкой цветов.', 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343'),
+          ('Личная ссылка', 'Одна ссылка для Instagram, Telegram, ВКонтакте и визитки.', 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1'),
+          ('Ручные записи', 'Клиент написал в директ — добавьте запись за 10 секунд с указанием источника.', 'M12 4v16m8-8H4'),
+        ] %}
+        <div class="p-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] card-lift">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="{{ icon }}"/></svg>
+          </div>
+          <h3 class="font-bold mb-2">{{ title }}</h3>
+          <p class="text-sm text-zinc-400 leading-relaxed">{{ text }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- CRM HIGHLIGHT -->
+  <section id="crm" class="py-20 px-6 reveal">
+    <div class="max-w-5xl mx-auto rounded-3xl border border-amber-500/20 bg-gradient-to-br from-amber-500/5 via-transparent to-violet-500/5 p-8 sm:p-12">
+      <div class="grid lg:grid-cols-2 gap-10 items-center">
+        <div>
+          <p class="text-amber-500 text-xs font-bold uppercase tracking-widest mb-3">CRM для мастеров</p>
+          <h2 class="text-3xl font-serif font-bold mb-4">Знайте каждого клиента</h2>
+          <p class="text-zinc-400 leading-relaxed mb-6">
+            Все клиенты собираются автоматически из записей. Видите количество визитов, суммарный доход,
+            последний визит, добавляете заметки и теги — как в полноценной CRM, но без сложности.
+          </p>
+          <ul class="space-y-3 text-sm">
+            {% for item in ['Автоматическая база из онлайн и ручных записей', 'Теги: VIP, постоянный, новый', 'Заметки: аллергии, предпочтения, пожелания', 'Полная история услуг и сумм'] %}
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              <span class="text-zinc-300">{{ item }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="rounded-2xl border border-[var(--border)] bg-zinc-950 p-5 shadow-2xl">
+          <div class="flex items-center gap-3 mb-4 pb-4 border-b border-[var(--border)]">
+            <div class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center text-lg font-bold text-amber-400">А</div>
+            <div>
+              <p class="font-bold">Анна Ковалёва</p>
+              <p class="text-xs text-zinc-500">+7 900 123-45-67 · 8 визитов</p>
+            </div>
+            <span class="ml-auto text-sm font-bold text-amber-400">14 400</span>
+          </div>
+          <p class="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-2">Заметки</p>
+          <p class="text-sm text-zinc-300 mb-4 p-3 rounded-xl bg-zinc-900 border border-white/5">Предпочитает утренние слоты. Аллергия на гель-лак с кислотой.</p>
+          <div class="flex gap-2 mb-4">
+            <span class="text-xs px-2 py-1 rounded-lg bg-amber-500/15 text-amber-400 font-semibold">VIP</span>
+            <span class="text-xs px-2 py-1 rounded-lg bg-white/5 text-zinc-400 font-semibold">Маникюр</span>
+          </div>
+          <p class="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-2">Последние визиты</p>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between p-2 rounded-lg bg-zinc-900"><span>12 мая · Маникюр + покрытие</span><span class="text-amber-400 font-semibold">1 800</span></div>
+            <div class="flex justify-between p-2 rounded-lg bg-zinc-900"><span>28 апр · Коррекция</span><span class="text-amber-400 font-semibold">1 200</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" class="py-20 px-6 reveal">
+    <div class="max-w-5xl mx-auto">
+      <p class="text-amber-500 text-xs font-bold uppercase tracking-widest mb-3 text-center">Как это работает</p>
+      <h2 class="text-3xl sm:text-4xl font-serif font-bold text-center mb-12">Три шага до первого клиента</h2>
+      <div class="grid md:grid-cols-3 gap-8">
+        {% for step, title, text in [
+          (1, 'Создайте профиль', 'Имя, специализация, фото и один из 12 профессиональных шаблонов.'),
+          (2, 'Настройте расписание', 'Отметьте дни и часы приёма. Добавьте услуги с ценами.'),
+          (3, 'Поделитесь ссылкой', 'Клиенты записываются сами. Вы видите всё в кабинете и CRM.'),
+        ] %}
+        <div class="relative">
+          <div class="text-5xl font-black text-amber-500/15 mb-3">0{{ step }}</div>
+          <h3 class="font-bold text-lg mb-2">{{ title }}</h3>
+          <p class="text-sm text-zinc-400 leading-relaxed">{{ text }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing" class="py-20 px-6 reveal">
+    <div class="max-w-3xl mx-auto text-center">
+      <p class="text-amber-500 text-xs font-bold uppercase tracking-widest mb-3">Тариф</p>
+      <h2 class="text-3xl sm:text-4xl font-serif font-bold mb-4">Попробуйте бесплатно, платите только если подходит</h2>
+      <div class="rounded-3xl border border-amber-500/30 bg-gradient-to-b from-amber-500/10 to-transparent p-8 sm:p-10 mt-8 text-left sm:text-center">
+        <p class="text-5xl font-black text-amber-400 mb-1">{{ trial_days }} <span class="text-2xl text-zinc-300 font-bold">дней</span></p>
+        <p class="text-lg text-zinc-300 mb-6">полный доступ без ограничений</p>
+        <p class="text-zinc-400 mb-6">После пробного периода — <strong class="text-white">{{ monthly_price }}</strong>. Отмена в любой момент.</p>
+        <ul class="space-y-2 text-sm text-zinc-400 mb-8 max-w-md mx-auto sm:text-center">
+          <li>Онлайн-запись и личная страница</li>
+          <li>CRM, аналитика, 12+ шаблонов</li>
+          <li>Напоминание на email за день до окончания trial</li>
+        </ul>
+        <a href="/register" class="inline-flex items-center gap-2 px-8 py-3.5 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-xl transition-all">
+          Начать пробный период
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARISON -->
+  <section class="py-20 px-6 reveal">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-3xl font-serif font-bold text-center mb-3">Почему не DIKIDI</h2>
+      <p class="text-zinc-400 text-center mb-10 text-sm">Сравнение для частного мастера, а не сети салонов</p>
+      <div class="rounded-2xl border border-[var(--border)] overflow-hidden">
+        <div class="grid grid-cols-3 bg-zinc-900 text-xs font-bold uppercase tracking-wider text-zinc-500">
+          <div class="p-4"></div>
+          <div class="p-4 text-center text-amber-400">BookSaaS</div>
+          <div class="p-4 text-center">DIKIDI</div>
+        </div>
+        {% for feature, us, them in [
+          ('CRM клиентов с заметками', true, false),
+          ('Бесплатный старт без комиссии', true, false),
+          ('Свой бренд и шаблоны', true, true),
+          ('Запись за 2 минуты', true, false),
+          ('Аналитика дохода', true, true),
+          ('Простота для одного мастера', true, false),
+        ] %}
+        <div class="grid grid-cols-3 border-t border-[var(--border)] text-sm">
+          <div class="p-4 text-zinc-300">{{ feature }}</div>
+          <div class="p-4 flex justify-center">{% if us %}<svg class="w-5 h-5 compare-check" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>{% else %}<span class="compare-x">—</span>{% endif %}</div>
+          <div class="p-4 flex justify-center">{% if them %}<svg class="w-5 h-5 compare-check" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>{% else %}<span class="compare-x">—</span>{% endif %}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- PROFESSIONS -->
+  <section class="py-16 px-6 reveal">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="text-2xl font-serif font-bold text-center mb-8">Для любого специалиста</h2>
+      <div class="flex flex-wrap justify-center gap-2">
+        {% for who in ['Барберы','Мастера ногтей','Массажисты','Визажисты','Бровисты','Тату-мастера','Тренеры','Психологи','Стоматологи','Стилисты','Косметологи','Подологи'] %}
+        <span class="px-4 py-2 rounded-full border border-[var(--border)] bg-[var(--surface)] text-sm font-medium text-zinc-300 hover:border-amber-500/30 hover:text-white transition-colors">{{ who }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- THEMES -->
+  <section id="themes" class="py-20 px-6 reveal">
+    <div class="max-w-5xl mx-auto">
+      <p class="text-amber-500 text-xs font-bold uppercase tracking-widest mb-3 text-center">Шаблоны</p>
+      <h2 class="text-3xl font-serif font-bold text-center mb-8">Ваш стиль — ваша страница</h2>
+      <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+        {% for key, theme in themes.items() %}
+        <a href="/register" class="group aspect-[3/4] rounded-xl overflow-hidden border border-[var(--border)] card-lift">
+          <img src="{{ theme.image }}" alt="{{ theme.name }}" class="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"/>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="py-20 px-6 reveal">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="text-3xl font-serif font-bold text-center mb-10">Отзывы мастеров</h2>
+      <div class="grid sm:grid-cols-3 gap-5">
+        {% for text, name, role in [
+          ('Раньше час в день уходил на согласование в директе. Теперь ссылка в шапке профиля — и CRM показывает всех постоянных.', 'Анна К.', 'Мастер маникюра'),
+          ('Наконец вижу, кто сколько принёс и кто давно не был. Это меняет подход к возврату клиентов.', 'Максим С.', 'Барбер'),
+          ('Настроил за пять минут. На следующий день пришли записи с новой страницы.', 'Дмитрий Л.', 'Тату-мастер'),
+        ] %}
+        <blockquote class="p-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] card-lift">
+          <div class="flex gap-0.5 mb-4">
+            {% for _ in range(5) %}
+            <svg class="w-4 h-4 text-amber-400 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            {% endfor %}
+          </div>
+          <p class="text-zinc-300 text-sm leading-relaxed mb-5">«{{ text }}»</p>
+          <footer>
+            <p class="font-semibold text-sm">{{ name }}</p>
+            <p class="text-xs text-zinc-500">{{ role }}</p>
+          </footer>
+        </blockquote>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-24 px-6 reveal">
+    <div class="max-w-2xl mx-auto text-center">
+      <h2 class="text-4xl sm:text-5xl font-serif font-black mb-4">Начните сегодня</h2>
+      <p class="text-zinc-400 text-lg mb-8">Регистрация за 2 минуты. Первая запись — уже сегодня.</p>
+      <a href="/register" class="inline-flex items-center gap-2 px-10 py-4 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black rounded-2xl shadow-2xl shadow-amber-500/30 hover:scale-105 transition-all text-lg">
+        Создать бесплатно
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+      </a>
+      <p class="text-zinc-600 text-xs mt-6">{{ trial_days }} дней бесплатно · затем {{ monthly_price }}</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-[var(--border)] py-8 px-6">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
+      <span class="font-serif font-bold">Book<span class="text-amber-500">SaaS</span></span>
+      <div class="flex gap-6 text-zinc-500">
+        <a href="/register" class="hover:text-zinc-300">Регистрация</a>
+        <a href="/login" class="hover:text-zinc-300">Войти</a>
+        <a href="{{ support_url }}" target="_blank" class="hover:text-sky-400">Поддержка</a>
+      </div>
+      <p class="text-zinc-700 text-xs">© 2026 BookSaaS</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+{% endblock %}

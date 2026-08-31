@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="theme-color" content="#09090b"/>
+  <title>{% block title %}BookSaaS{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    body { font-family: 'Inter', sans-serif; }
+    .font-serif { font-family: 'Playfair Display', serif !important; }
+    .hide-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+    .hide-scrollbar::-webkit-scrollbar { display:none; }
+    @keyframes fadeInUp {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .animate-in { animation: fadeInUp .35s ease both; }
+    .toast { position:fixed; top:max(1rem, var(--safe-top)); right:1rem; z-index:9999;
+             padding:.75rem 1.25rem; border-radius:.75rem; font-size:.875rem;
+             font-weight:600; box-shadow:0 4px 24px rgba(0,0,0,.18);
+             animation: fadeInUp .25s ease both; max-width: calc(100vw - 2rem); }
+    /* Mobile nav bar */
+    .mobile-nav { padding-bottom: var(--safe-bottom); }
+    .has-mobile-nav { padding-bottom: calc(4rem + var(--safe-bottom)); }
+    @media (min-width: 1024px) { .mobile-nav { display: none !important; } .has-mobile-nav { padding-bottom: 0; } }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="toast {% if category == 'error' %}bg-red-500 text-white{% else %}bg-green-500 text-white{% endif %}"
+           onclick="this.remove()">{{ message }}</div>
+    {% endfor %}
+    <script>
+      document.querySelectorAll('.toast').forEach(t => setTimeout(() => t.remove(), 3500));
+    </script>
+  {% endif %}
+{% endwith %}
+{% block body %}{% endblock %}
+<script>
+function showToast(msg, type) {
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white');
+  el.textContent = msg;
+  el.onclick = () => el.remove();
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+</script>
+</body>
+</html>

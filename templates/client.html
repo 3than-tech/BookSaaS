@@ -1,0 +1,511 @@
+{% extends 'base.html' %}
+{% block title %}Запись к {{ master.name }}{% endblock %}
+{% block body %}
+
+<div id="client-app"
+     class="min-h-screen {{ theme.clientBg }} flex justify-center font-sans"
+     data-master-id="{{ master.id }}"
+     data-slots='{{ slots_json }}'
+     data-dark="{{ 'true' if theme.dark else 'false' }}">
+
+  <div class="w-full max-w-md {{ theme.clientBg }} min-h-screen shadow-2xl relative flex flex-col">
+
+    <!-- Cover -->
+    <div id="cover" class="relative h-64 shrink-0">
+      <img src="{{ theme.image }}" alt="" class="w-full h-full object-cover"/>
+      <div class="absolute inset-0 bg-gradient-to-t {{ theme.gradient }} to-transparent"></div>
+      <button id="back-btn" onclick="goBack()"
+        class="hidden absolute left-4 top-5 p-2 bg-black/40 backdrop-blur-md rounded-full
+               text-white hover:bg-black/60 transition-all border border-white/15">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <div class="absolute bottom-0 left-0 w-full px-6 pb-5 flex items-end gap-4">
+        {% if master.avatar %}
+        <img src="/uploads/{{ master.avatar }}"
+             class="w-16 h-16 rounded-2xl object-cover flex-shrink-0 ring-2 ring-white/30 shadow-lg"/>
+        {% endif %}
+        <div class="min-w-0">
+          <h1 class="text-3xl {{ theme.fontTitle }} font-bold text-white tracking-tight leading-tight">{{ master.name }}</h1>
+          <p class="{{ theme.accentText }} text-xs font-bold tracking-widest uppercase mt-1 drop-shadow">{{ master.title }}</p>
+        </div>
+      </div>
+    </div>
+
+    {% if master.custom_theme %}
+    <style>
+      :root {
+        --ct-accent: {{ master.custom_theme._accentHex | default('#f59e0b') }};
+        --ct-bg:     {{ master.custom_theme._bgHex     | default('#18181b') }};
+        --ct-card:   {{ master.custom_theme._cardHex   | default('#27272a') }};
+        --ct-text:   {{ master.custom_theme._textHex   | default('#f4f4f5') }};
+        --ct-opp:    {{ master.custom_theme._textOppHex| default('#09090b') }};
+      }
+      #client-app { background: var(--ct-bg) !important; color: var(--ct-text) !important; }
+      .svc-btn, .time-btn, #summary-card { background: var(--ct-card) !important; border-color: rgba(128,128,128,0.2) !important; color: var(--ct-text) !important; }
+      .svc-btn.active-svc, .time-btn.active-time { background: var(--ct-accent) !important; color: var(--ct-opp) !important; }
+      #cta-btn { background: var(--ct-accent) !important; color: var(--ct-opp) !important; }
+      #bottom-bar { background: color-mix(in srgb, var(--ct-bg) 85%, transparent) !important; }
+    </style>
+    {% endif %}
+
+    <!-- Steps -->
+    <div class="flex-1 overflow-y-auto pb-28" id="scroll-area">
+
+      <!-- Step 1: Service -->
+      <div id="step-1" class="p-5 animate-in">
+        <h2 class="text-base font-bold mb-4 uppercase tracking-widest {{ theme.mutedText }}">Услуга</h2>
+        <div class="space-y-3">
+          {% for s in master.services %}
+          <button onclick="selectService('{{ s.id }}')" data-svc-id="{{ s.id }}"
+            class="svc-btn w-full text-left px-5 py-4 rounded-2xl border transition-all duration-200 {{ theme.cardBg }} hover:opacity-80">
+            <div class="flex justify-between items-start gap-3">
+              <span class="font-semibold text-base leading-tight">{{ s.name }}</span>
+              <span class="{{ theme.fontTitle }} font-bold {{ theme.accentText }} text-base flex-shrink-0">{{ s.price }}</span>
+            </div>
+            <div class="flex items-center gap-1.5 mt-1.5 text-sm {{ theme.mutedText }}">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              {{ s.duration }}
+            </div>
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Step 2: Calendar + time -->
+      <div id="step-2" class="hidden animate-in">
+        <div class="px-5 pt-5 pb-2">
+          <h2 class="text-base font-bold mb-1 uppercase tracking-widest {{ theme.mutedText }}">Дата</h2>
+        </div>
+
+        <!-- Month calendar -->
+        <div class="px-5 pb-4">
+          <!-- Month nav -->
+          <div class="flex items-center justify-between mb-4">
+            <button onclick="calPrev()"
+              class="p-2 rounded-xl border {{ theme.cardBg }} hover:opacity-70 transition-opacity
+                     disabled:opacity-20" id="cal-prev-btn">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+            <span class="font-semibold capitalize text-sm" id="cal-month-label"></span>
+            <button onclick="calNext()"
+              class="p-2 rounded-xl border {{ theme.cardBg }} hover:opacity-70 transition-opacity">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Weekday headers -->
+          <div class="grid grid-cols-7 mb-2">
+            {% for d in ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'] %}
+            <div class="text-center text-xs font-bold uppercase tracking-wider py-1 {{ theme.mutedText }} opacity-60">{{ d }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- Day grid -->
+          <div class="grid grid-cols-7 gap-1" id="cal-grid-client"></div>
+        </div>
+
+        <!-- Time slots -->
+        <div class="px-5 pt-4 border-t border-black/8" id="time-section">
+          <h2 class="text-base font-bold mb-3 uppercase tracking-widest {{ theme.mutedText }}">
+            Время
+            <span class="font-normal normal-case ml-1" id="time-date-label"></span>
+          </h2>
+          <div id="time-grid" class="grid grid-cols-4 gap-2"></div>
+        </div>
+      </div>
+
+      <!-- Step 3: Contact -->
+      <div id="step-3" class="p-5 hidden animate-in">
+        <h2 class="text-base font-bold mb-5 uppercase tracking-widest {{ theme.mutedText }}">Данные</h2>
+        <div class="space-y-4 mb-6">
+          <div>
+            <label class="block text-sm font-medium {{ theme.mutedText }} mb-1.5">Имя *</label>
+            <input type="text" id="client-name" autocomplete="name" placeholder="Иван Иванов"
+              oninput="updateCta()"
+              class="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-1
+                     {{ theme.cardBg }} bg-transparent transition-colors"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium {{ theme.mutedText }} mb-1.5">Телефон *</label>
+            <input type="tel" id="client-phone" autocomplete="tel" placeholder="+375 (99) 000-00-00"
+              oninput="updateCta()"
+              class="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-1
+                     {{ theme.cardBg }} bg-transparent transition-colors"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium {{ theme.mutedText }} mb-1.5">Email <span class="opacity-50 text-xs">(для уведомлений об акциях)</span></label>
+            <input type="email" id="client-email" autocomplete="email" placeholder="you@example.com"
+              class="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-1
+                     {{ theme.cardBg }} bg-transparent transition-colors"/>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div id="summary-card" class="rounded-2xl border p-5 {{ theme.cardBg }}">
+          <p class="text-xs font-bold {{ theme.accentText }} uppercase tracking-widest mb-3">Итого</p>
+          <div class="space-y-2.5 text-sm" id="summary-rows"></div>
+        </div>
+      </div>
+
+      <!-- Step 4: Done + Review -->
+      <div id="step-4" class="hidden animate-in px-6 py-12 flex flex-col items-center text-center">
+        <div class="w-20 h-20 rounded-full border flex items-center justify-center mb-6 {{ theme.cardBg }}">
+          <svg class="w-10 h-10 {{ theme.accentText }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h2 class="text-3xl {{ theme.fontTitle }} font-bold mb-2">Вы записаны!</h2>
+        <p class="{{ theme.mutedText }} text-sm leading-relaxed mb-8" id="success-text"></p>
+
+        <!-- Review form -->
+        <div id="review-form" class="w-full rounded-2xl border p-5 {{ theme.cardBg }} mb-6 text-left">
+          <p class="font-bold text-sm mb-3">Оставить отзыв</p>
+          <div class="flex gap-1 mb-3" id="star-row">
+            {% for i in range(1,6) %}
+            <button onclick="setRating({{ i }})" data-star="{{ i }}"
+              class="star-btn text-2xl transition-all hover:scale-110">☆</button>
+            {% endfor %}
+          </div>
+          <textarea id="review-text" rows="2" placeholder="Ваш отзыв (необязательно)..."
+            class="w-full px-3.5 py-2.5 border rounded-xl {{ theme.cardBg }} bg-transparent text-sm resize-none focus:outline-none mb-3"></textarea>
+          <button onclick="submitReview()" id="review-btn"
+            class="w-full py-2.5 font-bold rounded-xl {{ theme.accentBg }} text-sm transition-all">
+            Отправить отзыв
+          </button>
+        </div>
+
+        <button onclick="resetFlow()"
+          class="w-full py-3.5 font-bold rounded-xl border {{ theme.cardBg }} hover:opacity-70 transition-all">
+          Записаться ещё раз
+        </button>
+      </div>
+
+    <!-- Bottom CTA -->
+    <div id="bottom-bar"
+         class="absolute bottom-0 left-0 right-0 px-5 py-4 border-t border-black/8 backdrop-blur-xl
+                {% if theme.dark %}bg-black/80{% else %}bg-white/85{% endif %}">
+      <button id="cta-btn" onclick="handleCta()" disabled
+        class="w-full py-3.5 font-bold rounded-xl transition-all shadow-lg
+               disabled:opacity-30 disabled:cursor-not-allowed {{ theme.accentBg }}">
+        Продолжить
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CAPP      = document.getElementById('client-app');
+const MASTER_ID = CAPP.dataset.masterId;
+let   allSlots  = JSON.parse(CAPP.dataset.slots);
+
+const T = {
+  accentBg:     '{{ theme.accentBg }}',
+  accentText:   '{{ theme.accentText }}',
+  accentBorder: '{{ theme.accentBorder }}',
+  cardBg:       '{{ theme.cardBg }}',
+  mutedText:    '{{ theme.mutedText }}',
+  fontTitle:    '{{ theme.fontTitle }}',
+};
+
+const SERVICES = {{ master.services | tojson }};
+
+let step     = 1;
+let selSvcId = null;
+let selDate  = null;
+let selTime  = null;
+
+// Calendar: start from current month, no limit on future months
+const today     = new Date(); today.setHours(0,0,0,0);
+const now       = new Date(); // current time (not zeroed) for today's slot filtering
+const todayStr  = fmtDate(today);
+let   calMonth  = new Date(today.getFullYear(), today.getMonth(), 1);
+
+const RU_MONTHS_NOM = ['Январь','Февраль','Март','Апрель','Май','Июнь',
+                       'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const RU_MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня',
+                       'июля','августа','сентября','октября','ноября','декабря'];
+
+function fmtDate(d) {
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+// ── Step routing ─────────────────────────────────────────────────────────────
+function goToStep(n) {
+  for (let i=1;i<=4;i++) document.getElementById('step-'+i).classList.add('hidden');
+  document.getElementById('step-'+n).classList.remove('hidden');
+  step = n;
+  const isFinal = n === 4;
+  document.getElementById('cover').classList.toggle('hidden', isFinal);
+  document.getElementById('bottom-bar').classList.toggle('hidden', isFinal);
+  document.getElementById('back-btn').classList.toggle('hidden', n <= 1);
+  document.getElementById('scroll-area').scrollTop = 0;
+  updateCta();
+}
+function goBack() { if (step > 1) goToStep(step - 1); }
+
+// ── Step 1: service ──────────────────────────────────────────────────────────
+function selectService(id) {
+  selSvcId = id;
+  document.querySelectorAll('.svc-btn').forEach(btn => {
+    const a = btn.dataset.svcId === id;
+    btn.className = `svc-btn w-full text-left px-5 py-4 rounded-2xl border transition-all duration-200 `+
+      (a ? `${T.accentBg} ${T.accentBorder}` : `${T.cardBg} hover:opacity-80`);
+  });
+  updateCta();
+}
+
+// ── Calendar ─────────────────────────────────────────────────────────────────
+function renderClientCal() {
+  const y = calMonth.getFullYear(), m = calMonth.getMonth();
+  document.getElementById('cal-month-label').textContent = RU_MONTHS_NOM[m]+' '+y;
+
+  // Disable prev button if already at starting month
+  const startMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  document.getElementById('cal-prev-btn').disabled = calMonth <= startMonth;
+
+  const firstDow   = new Date(y,m,1).getDay();
+  const startPad   = firstDow === 0 ? 6 : firstDow-1;
+  const daysInMonth = new Date(y,m+1,0).getDate();
+  const grid = document.getElementById('cal-grid-client');
+  grid.innerHTML = '';
+
+  for (let i=0;i<startPad;i++) {
+    const el = document.createElement('div'); el.className='h-10'; grid.appendChild(el);
+  }
+
+  for (let d=1;d<=daysInMonth;d++) {
+    const dateObj  = new Date(y,m,d);
+    const key      = fmtDate(dateObj);
+    // isPast: strictly before today (yesterday and earlier)
+    const isPast   = key < todayStr;
+    const isToday  = key === todayStr;
+    const isSel    = key === selDate;
+
+    // For today: only count slots that are still in the future
+    let availableSlots = allSlots[key] || [];
+    if (isToday && availableSlots.length) {
+      const nowHHMM = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+      availableSlots = availableSlots.filter(t => t > nowHHMM);
+    }
+    const hasSlots = availableSlots.length > 0;
+
+    const btn = document.createElement('button');
+
+    // Past dates — fully disabled, grayed out
+    if (isPast) {
+      btn.disabled = true;
+      btn.className = 'h-10 w-full rounded-xl flex items-center justify-center text-xs border cursor-not-allowed select-none';
+      btn.style.cssText = 'background:transparent;border-color:rgba(128,128,128,0.1);color:rgba(128,128,128,0.25);';
+      btn.innerHTML = `<span class="font-medium">${d}</span>`;
+      grid.appendChild(btn);
+      continue;
+    }
+
+    // Today or future without available slots — grayed out, no click
+    if (!hasSlots) {
+      btn.disabled = true;
+      btn.className = 'h-10 w-full rounded-xl flex items-center justify-center text-xs border cursor-not-allowed select-none';
+      btn.style.cssText = 'background:transparent;border-color:rgba(128,128,128,0.1);color:rgba(128,128,128,0.28);';
+      btn.innerHTML = `<span class="font-medium">${d}</span>`;
+      grid.appendChild(btn);
+      continue;
+    }
+
+    // Available dates with open slots
+    btn.onclick = () => selectCalDate(key);
+    let cls = 'h-10 w-full rounded-xl flex flex-col items-center justify-center text-xs transition-all duration-200 border relative cursor-pointer ';
+    cls += isSel ? `${T.accentBg} ${T.accentBorder} shadow-md ` : `${T.cardBg} hover:opacity-70 `;
+    btn.className = cls;
+    btn.innerHTML = `<span class="font-medium ${isToday && !isSel ? T.accentText : ''}">${d}</span>`+
+      (!isSel ? `<span class="absolute bottom-1 w-1 h-1 rounded-full ${T.accentBg.split(' ')[0]}"></span>` : '');
+    grid.appendChild(btn);
+  }
+}
+
+function calPrev() {
+  const startMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  if (calMonth <= startMonth) return;
+  calMonth.setMonth(calMonth.getMonth()-1);
+  renderClientCal();
+}
+function calNext() {
+  calMonth.setMonth(calMonth.getMonth()+1);
+  renderClientCal();
+}
+
+function selectCalDate(key) {
+  selDate = key; selTime = null;
+  renderClientCal();
+  renderTimeGrid(key);
+  updateCta();
+  // Scroll to time section
+  setTimeout(() => {
+    document.getElementById('time-section').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }, 50);
+}
+
+// ── Time grid ────────────────────────────────────────────────────────────────
+function renderTimeGrid(dateKey) {
+  const grid  = document.getElementById('time-grid');
+  const label = document.getElementById('time-date-label');
+
+  if (!dateKey) { grid.innerHTML = ''; label.textContent = ''; return; }
+  const [y,mo,d] = dateKey.split('-').map(Number);
+  label.textContent = `— ${d} ${RU_MONTHS_GEN[mo-1]}`;
+
+  let times = allSlots[dateKey] || [];
+
+  // For today: filter out times that have already passed
+  if (dateKey === todayStr) {
+    const nowHHMM = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    times = times.filter(t => t > nowHHMM);
+  }
+
+  if (!times.length) {
+    grid.innerHTML = `<div class="col-span-4 text-center py-8 rounded-xl border border-dashed ${T.cardBg}">
+      <p class="text-sm ${T.mutedText}">Нет свободных слотов</p></div>`;
+    return;
+  }
+  grid.innerHTML = times.map(t => `
+    <button onclick="selectTime('${t}')" data-t="${t}"
+      class="time-btn py-3 rounded-xl text-sm font-semibold border transition-all duration-200
+             ${selTime===t ? T.accentBg+' '+T.accentBorder+' shadow-md' : T.cardBg+' hover:opacity-70'}">
+      ${t}
+    </button>`).join('');
+}
+
+function selectTime(t) {
+  selTime = t;
+  document.querySelectorAll('.time-btn').forEach(btn => {
+    const a = btn.dataset.t === t;
+    btn.className = `time-btn py-3 rounded-xl text-sm font-semibold border transition-all duration-200 `+
+      (a ? `${T.accentBg} ${T.accentBorder} shadow-md` : `${T.cardBg} hover:opacity-70`);
+  });
+  updateCta();
+}
+
+// ── Summary ───────────────────────────────────────────────────────────────────
+function renderSummary() {
+  const svc = SERVICES.find(s => s.id === selSvcId);
+  const [y,mo,d] = selDate.split('-').map(Number);
+  const dateStr  = `${d} ${RU_MONTHS_GEN[mo-1]} ${y} в ${selTime}`;
+  document.getElementById('summary-rows').innerHTML = `
+    <div class="flex justify-between gap-4">
+      <span class="${T.mutedText}">Услуга</span>
+      <span class="font-semibold text-right">${svc?.name||''}</span>
+    </div>
+    <div class="flex justify-between gap-4">
+      <span class="${T.mutedText}">Когда</span>
+      <span class="font-semibold text-right">${dateStr}</span>
+    </div>
+    <div class="flex justify-between gap-4 pt-2.5 border-t border-black/8 mt-1">
+      <span class="${T.mutedText}">Стоимость</span>
+      <span class="font-bold ${T.accentText} text-base">${svc?.price||''}</span>
+    </div>`;
+}
+
+// ── CTA ───────────────────────────────────────────────────────────────────────
+function updateCta() {
+  const btn = document.getElementById('cta-btn');
+  if (step === 1) {
+    btn.disabled = !selSvcId; btn.textContent = 'Продолжить';
+  } else if (step === 2) {
+    btn.disabled = !selTime; btn.textContent = 'Выбрать время';
+  } else if (step === 3) {
+    const name  = document.getElementById('client-name')?.value.trim();
+    const phone = document.getElementById('client-phone')?.value.trim();
+    btn.disabled = !(name && phone);
+    btn.textContent = btn.dataset.loading ? 'Отправка...' : 'Подтвердить запись';
+  }
+}
+
+async function handleCta() {
+  if (step === 1) {
+    goToStep(2); renderClientCal(); renderTimeGrid(selDate);
+  } else if (step === 2) {
+    renderSummary(); goToStep(3);
+  } else if (step === 3) {
+    const name  = document.getElementById('client-name').value.trim();
+    const phone = document.getElementById('client-phone').value.trim();
+    const email = document.getElementById('client-email').value.trim();
+    if (!name || !phone) return;
+    const btn = document.getElementById('cta-btn');
+    btn.disabled = true; btn.dataset.loading = '1'; btn.textContent = 'Отправка...';
+    try {
+      const r = await fetch('/api/book', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({master_id:MASTER_ID, client_name:name, client_phone:phone,
+                              client_email: email||undefined,
+                              service_id:selSvcId, date:selDate, time:selTime})
+      });
+      const data = await r.json();
+      if (data.ok) {
+        lastBookingId = data.booking_id || null;
+        const [y,mo,d] = selDate.split('-').map(Number);
+        document.getElementById('success-text').innerHTML =
+          `Ждём вас <strong>${d} ${RU_MONTHS_GEN[mo-1]}</strong> в <strong>${selTime}</strong>.`;
+        goToStep(4);
+      } else {
+        showToast(data.error || 'Ошибка при записи', 'error');
+        delete btn.dataset.loading; btn.disabled = false; updateCta();
+      }
+    } catch(e) {
+      showToast('Ошибка сети. Попробуйте ещё раз.', 'error');
+      delete btn.dataset.loading; btn.disabled = false; updateCta();
+    }
+  }
+}
+
+let lastBookingId = null;
+let selectedRating = 5;
+function setRating(n) {
+  selectedRating = n;
+  document.querySelectorAll('.star-btn').forEach(btn => {
+    btn.textContent = parseInt(btn.dataset.star) <= n ? '★' : '☆';
+    btn.style.color = parseInt(btn.dataset.star) <= n ? '#f59e0b' : '';
+  });
+}
+setRating(5);
+
+async function submitReview() {
+  const text = document.getElementById('review-text').value.trim();
+  const name = document.getElementById('client-name')?.value.trim() || 'Клиент';
+  const btn = document.getElementById('review-btn');
+  btn.disabled = true; btn.textContent = 'Отправка...';
+  try {
+    const r = await fetch('/api/reviews/public/' + MASTER_ID, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({client_name: name, rating: selectedRating, text, booking_id: lastBookingId})
+    });
+    const d = await r.json();
+    if (d.ok) {
+      document.getElementById('review-form').innerHTML =
+        '<p class="text-center py-4 font-semibold text-emerald-400">★ Спасибо за отзыв!</p>';
+    } else {
+      showToast(d.error || 'Ошибка', 'error');
+      btn.disabled = false; btn.textContent = 'Отправить отзыв';
+    }
+  } catch(e) { btn.disabled = false; btn.textContent = 'Отправить отзыв'; }
+}
+
+function resetFlow() {
+  selSvcId = null; selDate = null; selTime = null; lastBookingId = null;
+  ['client-name','client-phone','client-email'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  calMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  setRating(5);
+  const rf = document.getElementById('review-form');
+  if (rf) rf.innerHTML = rf.innerHTML; // reset — handled by goToStep re-render
+  goToStep(1);
+}
+
+goToStep(1);
+</script>
+{% endblock %}

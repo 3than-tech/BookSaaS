@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% block title %}Регистрация — BookSaaS{% endblock %}
+{% block body %}
+<div class="min-h-screen bg-zinc-950 flex items-center justify-center p-4 py-10">
+  <div class="w-full max-w-lg animate-in">
+    <div class="text-center mb-7">
+      <a href="/landing" class="inline-flex items-center gap-1 text-zinc-500 hover:text-zinc-300 text-xs mb-5 transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        На главную
+      </a>
+      <div class="w-14 h-14 mx-auto mb-3 relative">
+        <div class="absolute inset-0 bg-gradient-to-br from-violet-600 to-indigo-700 rounded-2xl shadow-lg shadow-violet-500/30 rotate-6 opacity-60"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl flex items-center justify-center">
+          <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+      </div>
+      <h1 class="text-3xl font-serif font-bold text-white tracking-tight">Book<span class="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">SaaS</span></h1>
+      <p class="text-zinc-500 text-sm mt-1">{{ trial_days }} дней бесплатно · затем {{ monthly_price }}</p>
+    </div>
+
+    <div class="bg-zinc-900 rounded-2xl border border-white/8 p-7 shadow-2xl">
+      <form method="POST" action="/register" class="space-y-4">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">Логин *</label>
+            <input type="text" name="username" required autocomplete="username" placeholder="my_login"
+              class="w-full bg-zinc-800 border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-zinc-600
+                     focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 transition-all"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">Пароль *</label>
+            <input type="password" name="password" required autocomplete="new-password" placeholder="мин. 4 символа"
+              class="w-full bg-zinc-800 border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-zinc-600
+                     focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 transition-all"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">Имя / Название *</label>
+            <input type="text" name="name" required placeholder="Иван Иванов"
+              class="w-full bg-zinc-800 border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-zinc-600
+                     focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 transition-all"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">Специализация</label>
+            <input type="text" name="title" placeholder="Барбер, мастер маникюра..."
+              class="w-full bg-zinc-800 border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-zinc-600
+                     focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 transition-all"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">Телефон</label>
+            <div class="relative">
+              <svg class="absolute left-3 top-2.5 w-4 h-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.5a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .84h3a2 2 0 012 1.72"/>
+              </svg>
+              <input type="tel" name="phone" placeholder="+375 (99) 000-00-00" autocomplete="tel"
+                class="w-full bg-zinc-800 border border-white/10 rounded-xl pl-9 pr-3 py-2.5 text-white text-sm placeholder-zinc-600
+                       focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 transition-all"/>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">Email *</label>
+            <div class="relative">
+              <svg class="absolute left-3 top-2.5 w-4 h-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <input type="email" name="email" required placeholder="you@example.com" autocomplete="email"
+                class="w-full bg-zinc-800 border border-white/10 rounded-xl pl-9 pr-3 py-2.5 text-white text-sm placeholder-zinc-600
+                       focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 transition-all"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Theme picker -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-400 mb-2 uppercase tracking-wider">Шаблон оформления</label>
+          <div class="grid grid-cols-6 gap-2">
+            {% for key, theme in themes.items() %}
+            <label class="cursor-pointer group">
+              <input type="radio" name="theme_id" value="{{ key }}" class="sr-only peer"
+                     {% if key == 'noir' %}checked{% endif %}/>
+              <div class="relative aspect-square rounded-xl overflow-hidden border-2 border-transparent
+                          peer-checked:border-amber-500 transition-all hover:opacity-90
+                          peer-checked:shadow-md peer-checked:shadow-amber-500/25">
+                <img src="{{ theme.image }}" alt=""
+                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"/>
+                <div class="absolute inset-0 bg-black/10"></div>
+                <div class="absolute inset-0 items-center justify-center hidden peer-checked:flex bg-black/20">
+                  <svg class="w-4 h-4 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </div>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- ToS -->
+        <div class="bg-zinc-800/60 rounded-xl border border-white/8 p-3.5">
+          <div class="flex items-start gap-3">
+            <input type="checkbox" name="tos_accepted" id="tos_accepted" required
+              class="mt-0.5 w-4 h-4 rounded accent-violet-500 flex-shrink-0 cursor-pointer"/>
+            <label for="tos_accepted" class="text-xs text-zinc-400 leading-relaxed cursor-pointer">
+              Я прочитал(а) и принимаю
+              <button type="button" onclick="document.getElementById('tos-modal').classList.remove('hidden')"
+                class="text-violet-400 hover:text-violet-300 underline underline-offset-2 font-semibold">условия использования</button>.
+              Регистрируясь, соглашаюсь с правилами обработки данных и использования платформы BookSaaS.
+            </label>
+          </div>
+        </div>
+
+        <!-- Referral code (hidden, pre-filled if ref param) -->
+        <input type="hidden" name="ref_code" value="{{ ref_code or '' }}"/>
+
+        <button type="submit"
+          class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 active:from-violet-700 active:to-indigo-700 text-white font-bold py-3
+                 rounded-xl transition-all shadow-lg shadow-violet-500/25 mt-2">
+          Начать {{ trial_days }}-дневный trial
+        </button>
+        {% if ref_code %}
+        <p class="text-xs text-violet-400 text-center mt-2 bg-violet-500/10 border border-violet-500/20 rounded-xl p-2">
+          🎁 Вы регистрируетесь по реферальной ссылке — пригласивший получит +30 дней бонуса!
+        </p>
+        {% endif %}
+        <p class="text-xs text-zinc-500 text-center mt-3">На email придёт письмо с доступом. За день до конца trial — напоминание об оплате {{ monthly_price }}.</p>
+      </form>
+    </div>
+
+    <!-- ToS Modal -->
+    <div id="tos-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div class="bg-zinc-900 rounded-2xl border border-white/10 w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl animate-in">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-white/8 flex-shrink-0">
+          <h2 class="text-base font-bold text-white font-serif">Условия использования BookSaaS</h2>
+          <button onclick="document.getElementById('tos-modal').classList.add('hidden')"
+            class="w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-xl leading-none transition-colors">×</button>
+        </div>
+        <div class="overflow-y-auto px-5 py-4 text-zinc-300 text-sm leading-relaxed space-y-4">
+          <p class="text-amber-400 font-semibold text-xs uppercase tracking-wider">Версия 1.0 · 1 января 2024 г.</p>
+          <section><h3 class="font-bold text-white mb-1">1. Общие положения</h3><p>Настоящие Условия регулируют отношения между сервисом BookSaaS («Сервис») и зарегистрированными мастерами («Пользователь»). Использование Сервиса означает полное принятие Условий.</p></section>
+          <section><h3 class="font-bold text-white mb-1">2. Описание сервиса</h3><p>BookSaaS — платформа для онлайн-записи клиентов к мастерам сферы красоты и услуг. Сервис предоставляет инструменты управления расписанием, клиентской базой, финансовым учётом, аналитикой и коммуникацией.</p></section>
+          <section><h3 class="font-bold text-white mb-1">3. Регистрация и аккаунт</h3><p>3.1. При регистрации Мастер обязан предоставить достоверные данные.<br>3.2. Мастер несёт ответственность за сохранность логина и пароля. Передача данных доступа третьим лицам запрещена.<br>3.3. Один Мастер — один аккаунт. Создание нескольких аккаунтов для обхода ограничений запрещено.<br>3.4. Администрация вправе заблокировать аккаунт при нарушении Условий.</p></section>
+          <section><h3 class="font-bold text-white mb-1">4. Пробный период и оплата</h3><p>4.1. Новым пользователям предоставляется бесплатный пробный период — {{ trial_days }} дней.<br>4.2. По истечении пробного периода доступ приостанавливается до оформления подписки.<br>4.3. Стоимость подписки — {{ monthly_price }}/месяц. Тарифы могут изменяться с уведомлением за 30 дней.<br>4.4. Оплата не возвращается за прошедший период, если иное не предусмотрено законом.<br>4.5. За 1 день до конца пробного периода Сервис направляет напоминание на email Мастера.</p></section>
+          <section><h3 class="font-bold text-white mb-1">5. Данные клиентов и конфиденциальность</h3><p>5.1. Мастер является оператором персональных данных своих клиентов.<br>5.2. Мастер обязан получить согласие клиентов на обработку данных (имя, телефон, email, история визитов).<br>5.3. Сервис не передаёт данные клиентов Мастера третьим лицам без согласия Мастера, за исключением случаев, предусмотренных законом.<br>5.4. При удалении аккаунта все данные удаляются в течение 30 дней.</p></section>
+          <section><h3 class="font-bold text-white mb-1">6. Скидки и акции</h3><p>6.1. Мастер самостоятельно определяет условия акций.<br>6.2. При создании акции уведомление направляется клиентам с email, давшим согласие на рассылку.<br>6.3. Мастер несёт ответственность за достоверность информации в акциях.</p></section>
+          <section><h3 class="font-bold text-white mb-1">7. Отзывы</h3><p>7.1. Клиенты могут оставлять отзывы через публичную страницу записи.<br>7.2. Мастер не вправе публиковать ложные отзывы или манипулировать рейтингом.<br>7.3. Сервис вправе удалять отзывы, нарушающие Условия.</p></section>
+          <section><h3 class="font-bold text-white mb-1">8. Напоминания клиентам</h3><p>8.1. Функция напоминаний доступна в рамках платной подписки.<br>8.2. Мастер несёт ответственность за наличие согласия клиентов на уведомления.<br>8.3. Использование напоминаний для рекламных рассылок запрещено.</p></section>
+          <section><h3 class="font-bold text-white mb-1">9. Финансовый учёт</h3><p>Инструменты финансового учёта предназначены для личного управленческого учёта Мастера и не являются официальной бухгалтерской системой.</p></section>
+          <section><h3 class="font-bold text-white mb-1">10. Запрещённые действия</h3><p>Запрещается: использовать Сервис в незаконных целях; распространять вредоносное ПО; получать несанкционированный доступ к данным других пользователей; нарушать работу инфраструктуры Сервиса; перепродавать доступ к аккаунту.</p></section>
+          <section><h3 class="font-bold text-white mb-1">11. Ограничение ответственности</h3><p>Сервис предоставляется «как есть». Совокупная ответственность Сервиса не превышает суммы, уплаченной за последний месяц подписки.</p></section>
+          <section><h3 class="font-bold text-white mb-1">12. Изменение условий</h3><p>Сервис вправе изменять Условия с уведомлением по email за 14 дней. Продолжение использования означает согласие с новой редакцией.</p></section>
+          <section><h3 class="font-bold text-white mb-1">13. Контакты</h3><p>По вопросам обращайтесь через <a href="{{ support_url }}" target="_blank" class="text-amber-400 underline">Telegram-поддержку</a>.</p></section>
+        </div>
+        <div class="px-5 py-4 border-t border-white/8 flex-shrink-0">
+          <button onclick="document.getElementById('tos-modal').classList.add('hidden'); document.getElementById('tos_accepted').checked=true;"
+            class="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold rounded-xl transition-all">
+            Принять и закрыть
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between mt-5 px-1">
+      <p class="text-zinc-500 text-sm">
+        Уже есть аккаунт?
+        <a href="/login" class="text-violet-400 hover:text-violet-300 font-semibold">Войти</a>
+      </p>
+      <a href="{{ support_url }}" target="_blank"
+         class="flex items-center gap-1.5 text-zinc-500 hover:text-sky-400 text-xs transition-colors">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.09 14.3l-2.956-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.722.286z"/>
+        </svg>
+        Поддержка
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

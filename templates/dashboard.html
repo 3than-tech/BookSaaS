@@ -1,0 +1,658 @@
+{% extends 'base.html' %}
+{% block title %}Кабинет мастера — BookSaaS{% endblock %}
+{% block body %}
+<div class="min-h-screen {{ theme.masterBg }} flex">
+  <!-- SIDEBAR -->
+  <aside class="w-64 {{ theme.sidebarBg }} border-r border-white/10 flex flex-col h-screen sticky top-0">
+    <!-- Logo -->
+    <div class="p-6 border-b border-white/10">
+      <h1 class="text-2xl {{ theme.fontTitle }} font-bold">
+        Book<span class="{{ theme.accentText }}">SaaS</span>
+      </h1>
+    </div>
+
+    <!-- User info -->
+    <div class="p-4 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        {% if master.avatar %}
+        <img src="/uploads/{{ master.avatar }}" class="w-10 h-10 rounded-full object-cover"/>
+        {% else %}
+        <div class="w-10 h-10 rounded-full {{ theme.accentBg }} flex items-center justify-center text-sm font-bold">
+          {{ master.name[0]|upper }}
+        </div>
+        {% endif %}
+        <div class="flex-1">
+          <p class="font-semibold text-sm truncate">{{ master.name }}</p>
+          <p class="{{ theme.mutedText }} text-xs">{{ master.username }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation tabs -->
+    <nav class="flex-1 overflow-y-auto p-4 space-y-2">
+      <button class="tab-btn w-full text-left px-4 py-2.5 rounded-lg {{ theme.accentText }} {{ theme.accentBg }} bg-opacity-20 font-medium transition" data-tab="dashboard">
+        📊 Заказы
+      </button>
+      <button class="tab-btn w-full text-left px-4 py-2.5 rounded-lg {{ theme.mutedText }} hover:{{ theme.accentBg }} font-medium transition" data-tab="clients">
+        👥 Клиенты
+      </button>
+      <button class="tab-btn w-full text-left px-4 py-2.5 rounded-lg {{ theme.mutedText }} hover:{{ theme.accentBg }} font-medium transition" data-tab="finances">
+        💰 Финансы
+      </button>
+      <button class="tab-btn w-full text-left px-4 py-2.5 rounded-lg {{ theme.mutedText }} hover:{{ theme.accentBg }} font-medium transition" data-tab="reviews">
+        ⭐ Отзывы
+      </button>
+      <button class="tab-btn w-full text-left px-4 py-2.5 rounded-lg {{ theme.mutedText }} hover:{{ theme.accentBg }} font-medium transition" data-tab="discounts">
+        🎁 Акции
+      </button>
+      <button class="tab-btn w-full text-left px-4 py-2.5 rounded-lg {{ theme.mutedText }} hover:{{ theme.accentBg }} font-medium transition" data-tab="reminders">
+        🔔 Напоминания
+      </button>
+      <button class="tab-btn w-full text-left px-4 py-2.5 rounded-lg {{ theme.mutedText }} hover:{{ theme.accentBg }} font-medium transition" data-tab="referrals">
+        🔗 Реферралы
+      </button>
+    </nav>
+
+    <!-- Footer menu -->
+    <div class="p-4 border-t border-white/10 space-y-2">
+      <button onclick="location.href='/settings'" class="w-full text-left px-4 py-2.5 rounded-lg {{ theme.mutedText }} hover:{{ theme.accentBg }} transition">
+        ⚙️ Настройки
+      </button>
+      <button onclick="location.href='/logout'" class="w-full text-left px-4 py-2.5 rounded-lg {{ theme.mutedText }} hover:bg-red-500/20 transition">
+        🚪 Выход
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 overflow-y-auto">
+    <div class="p-8">
+      <!-- Dashboard Tab (Заказы) -->
+      <div id="tab-dashboard" class="tab-content">
+        <div class="space-y-6">
+          <div>
+            <h2 class="text-3xl {{ theme.fontTitle }} font-bold mb-2">📊 Заказы</h2>
+            <p class="{{ theme.mutedText }}">Управляйте записями клиентов</p>
+          </div>
+
+          <!-- Stats -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="{{ theme.cardBg }} rounded-xl p-6 border">
+              <p class="{{ theme.mutedText }} text-sm mb-1">Всего заказов</p>
+              <p class="text-3xl {{ theme.fontTitle }} font-bold">{{ bookings|length }}</p>
+            </div>
+            <div class="{{ theme.cardBg }} rounded-xl p-6 border">
+              <p class="{{ theme.mutedText }} text-sm mb-1">Завершено</p>
+              <p class="text-3xl {{ theme.fontTitle }} font-bold">{{ completed }}</p>
+            </div>
+            <div class="{{ theme.cardBg }} rounded-xl p-6 border">
+              <p class="{{ theme.mutedText }} text-sm mb-1">Доход за месяц</p>
+              <p class="text-3xl {{ theme.fontTitle }} font-bold">₽ {{ (monthly_income/1000)|round(1) }}k</p>
+            </div>
+          </div>
+
+          <!-- Bookings table -->
+          <div class="{{ theme.cardBg }} rounded-xl p-6 border">
+            <h3 class="text-lg {{ theme.fontTitle }} font-bold mb-4">Список заказов</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="{{ theme.mutedText }} border-b border-white/10">
+                    <th class="text-left py-3 px-2">Клиент</th>
+                    <th class="text-left py-3 px-2">Услуга</th>
+                    <th class="text-left py-3 px-2">Дата</th>
+                    <th class="text-center py-3 px-2">Статус</th>
+                  </tr>
+                </thead>
+                <tbody id="bookings-list">
+                  <tr><td colspan="4" class="text-center py-4 {{ theme.mutedText }}">Загрузка...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clients Tab -->
+      <div id="tab-clients" class="tab-content hidden">
+        <div class="space-y-6">
+          <div>
+            <h2 class="text-3xl {{ theme.fontTitle }} font-bold mb-2">👥 Клиенты</h2>
+            <p class="{{ theme.mutedText }}">База ваших клиентов</p>
+          </div>
+
+          <div class="{{ theme.cardBg }} rounded-xl p-6 border">
+            <p class="text-center {{ theme.mutedText }} py-8">Загрузка списка клиентов...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Finances Tab - ВСТАВИТЬ СОДЕРЖИМОЕ ИЗ tab_finances.html -->
+      <div id="tab-finances" class="tab-content hidden">
+        <div class="space-y-6">
+          <div>
+            <h2 class="text-3xl {{ theme.fontTitle }} font-bold mb-2">💰 Финансы</h2>
+            <p class="{{ theme.mutedText }}">Доходы, расходы и аналитика</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="{{ theme.cardBg }} rounded-2xl p-6 border animate-in">
+              <p class="{{ theme.mutedText }} text-sm mb-1">Доход за месяц</p>
+              <p class="text-3xl {{ theme.fontTitle }} font-bold" id="month_income">₽ 0</p>
+            </div>
+            <div class="{{ theme.cardBg }} rounded-2xl p-6 border animate-in stagger-1">
+              <p class="{{ theme.mutedText }} text-sm mb-1">Доход за неделю</p>
+              <p class="text-3xl {{ theme.fontTitle }} font-bold" id="week_income">₽ 0</p>
+            </div>
+            <div class="{{ theme.cardBg }} rounded-2xl p-6 border animate-in stagger-2">
+              <p class="{{ theme.mutedText }} text-sm mb-1">Расходы</p>
+              <p class="text-3xl {{ theme.fontTitle }} font-bold" id="expenses">₽ 0</p>
+            </div>
+            <div class="{{ theme.cardBg }} rounded-2xl p-6 border animate-in stagger-3">
+              <p class="{{ theme.mutedText }} text-sm mb-1">Чистый доход</p>
+              <p class="text-3xl {{ theme.fontTitle }} font-bold" id="net_income">₽ 0</p>
+            </div>
+          </div>
+
+          <div class="{{ theme.cardBg }} rounded-2xl p-6 border">
+            <h3 class="text-lg {{ theme.fontTitle }} font-bold mb-4">Доходы по услугам</h3>
+            <div class="space-y-3" id="service_income">
+              <div class="text-center {{ theme.mutedText }}">Загрузка...</div>
+            </div>
+          </div>
+
+          <div class="{{ theme.cardBg }} rounded-2xl p-6 border">
+            <h3 class="text-lg {{ theme.fontTitle }} font-bold mb-4">История транзакций</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="{{ theme.mutedText }} border-b border-white/10">
+                    <th class="text-left py-3 px-2">Описание</th>
+                    <th class="text-left py-3 px-2">Тип</th>
+                    <th class="text-right py-3 px-2">Сумма</th>
+                    <th class="text-left py-3 px-2">Дата</th>
+                  </tr>
+                </thead>
+                <tbody id="transactions_list">
+                  <tr><td colspan="4" class="text-center py-4 {{ theme.mutedText }}">Загрузка...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Tab -->
+      <div id="tab-reviews" class="tab-content hidden">
+        <div class="space-y-6">
+          <div>
+            <h2 class="text-3xl {{ theme.fontTitle }} font-bold mb-2">⭐ Отзывы</h2>
+            <p class="{{ theme.mutedText }}">Отзывы клиентов о ваших услугах</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="{{ theme.cardBg }} rounded-2xl p-6 border animate-in">
+              <p class="{{ theme.mutedText }} text-sm mb-1">Средний рейтинг</p>
+              <div class="flex items-baseline gap-1">
+                <span class="text-4xl {{ theme.fontTitle }} font-bold" id="avg_rating">5.0</span>
+                <span class="{{ theme.mutedText }}">/5.0</span>
+              </div>
+            </div>
+            <div class="{{ theme.cardBg }} rounded-2xl p-6 border animate-in stagger-1">
+              <p class="{{ theme.mutedText }} text-sm mb-1">Всего отзывов</p>
+              <p class="text-4xl {{ theme.fontTitle }} font-bold" id="total_reviews">0</p>
+            </div>
+            <div class="{{ theme.cardBg }} rounded-2xl p-6 border animate-in stagger-2">
+              <p class="{{ theme.mutedText }} text-sm mb-1">Ссылка для отзывов</p>
+              <input type="text" id="review_link" readonly class="bg-zinc-800 border border-white/10 rounded-lg px-2 py-1 text-xs" value=""/>
+            </div>
+          </div>
+
+          <div id="reviews_list" class="space-y-3">
+            <div class="{{ theme.cardBg }} rounded-2xl p-6 border text-center {{ theme.mutedText }}">Загрузка отзывов...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Discounts Tab -->
+      <div id="tab-discounts" class="tab-content hidden">
+        <div class="space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-3xl {{ theme.fontTitle }} font-bold mb-2">🎁 Акции и скидки</h2>
+              <p class="{{ theme.mutedText }}">Создавайте спецпредложения для клиентов</p>
+            </div>
+            <button onclick="openCreateDiscount()" class="{{ theme.accentBg }} px-6 py-3 rounded-xl font-semibold transition">
+              ➕ Новая акция
+            </button>
+          </div>
+
+          <div class="{{ theme.cardBg }} rounded-2xl p-6 border">
+            <h3 class="text-lg {{ theme.fontTitle }} font-bold mb-4">Активные акции</h3>
+            <div id="active_discounts" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="text-center {{ theme.mutedText }} py-8">Загрузка...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reminders Tab -->
+      <div id="tab-reminders" class="tab-content hidden">
+        <div class="space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-3xl {{ theme.fontTitle }} font-bold mb-2">🔔 Напоминания</h2>
+              <p class="{{ theme.mutedText }}">Управляйте напоминаниями клиентам о записях</p>
+            </div>
+            <button onclick="openCreateReminder()" class="{{ theme.accentBg }} px-6 py-3 rounded-xl font-semibold transition">
+              ➕ Добавить напоминание
+            </button>
+          </div>
+
+          <div id="reminders_list" class="space-y-3">
+            <div class="{{ theme.cardBg }} rounded-2xl p-6 border text-center {{ theme.mutedText }}">Загрузка напоминаний...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Referrals Tab -->
+      <div id="tab-referrals" class="tab-content hidden">
+        <div class="space-y-6">
+          <div>
+            <h2 class="text-3xl {{ theme.fontTitle }} font-bold mb-2">🔗 Реферральная программа</h2>
+            <p class="{{ theme.mutedText }}">Пригласите друзей и получите бесплатные месяцы подписки</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="{{ theme.cardBg }} rounded-2xl p-6 border animate-in">
+              <p class="{{ theme.mutedText }} text-sm mb-3">Ваш реферральный код</p>
+              <div class="flex gap-2">
+                <input type="text" id="ref_code" readonly class="flex-1 bg-zinc-800 border border-white/10 rounded-lg px-3 py-2 text-lg font-mono font-bold focus:outline-none" value=""/>
+                <button onclick="copyRefCode()" class="{{ theme.accentBg }} px-4 rounded-lg text-sm font-medium hover:shadow-lg transition">
+                  Копировать
+                </button>
+              </div>
+            </div>
+
+            <div class="{{ theme.cardBg }} rounded-2xl p-6 border animate-in stagger-1">
+              <p class="{{ theme.mutedText }} text-sm mb-2">Успешных приглашений</p>
+              <p class="text-4xl {{ theme.fontTitle }} font-bold text-amber-400" id="ref_count">0</p>
+            </div>
+
+            <div class="{{ theme.cardBg }} rounded-2xl p-6 border animate-in stagger-2">
+              <p class="{{ theme.mutedText }} text-sm mb-2">Заработано месяцев</p>
+              <p class="text-4xl {{ theme.fontTitle }} font-bold text-green-400" id="ref_months">0</p>
+            </div>
+          </div>
+
+          <div class="{{ theme.cardBg }} rounded-2xl p-6 border">
+            <h3 class="text-lg {{ theme.fontTitle }} font-bold mb-4">Реферральная ссылка</h3>
+            <div class="flex gap-2">
+              <input type="text" id="ref_link" readonly class="flex-1 bg-zinc-800 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none" value=""/>
+              <button onclick="copyRefLink()" class="{{ theme.accentBg }} px-4 rounded-lg text-sm font-medium">
+                Копировать
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modals and Scripts -->
+<div id="discount-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div class="{{ theme.cardBg }} rounded-2xl p-8 max-w-md w-full mx-4 border">
+    <h3 class="text-xl {{ theme.fontTitle }} font-bold mb-4">Создать акцию</h3>
+    <form id="discount-form" class="space-y-4">
+      <input type="text" id="discount_title" placeholder="Название акции" required class="w-full bg-zinc-800 border border-white/10 rounded-xl px-4 py-3 text-white"/>
+      <textarea id="discount_desc" placeholder="Описание" rows="3" class="w-full bg-zinc-800 border border-white/10 rounded-xl px-4 py-3 text-white resize-none"></textarea>
+      <input type="number" id="discount_percent" min="1" max="100" placeholder="20" value="20" class="w-full bg-zinc-800 border border-white/10 rounded-xl px-4 py-3 text-white"/>
+      <div class="flex gap-3">
+        <button type="submit" class="{{ theme.accentBg }} flex-1 py-3 rounded-xl font-semibold">Создать</button>
+        <button type="button" onclick="closeCreateDiscount()" class="flex-1 bg-zinc-800 py-3 rounded-xl font-semibold">Отмена</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="reminder-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div class="{{ theme.cardBg }} rounded-2xl p-8 max-w-md w-full mx-4 border">
+    <h3 class="text-xl {{ theme.fontTitle }} font-bold mb-4">Новое напоминание</h3>
+    <form id="reminder-form" class="space-y-4">
+      <select id="reminder_booking" required class="w-full bg-zinc-800 border border-white/10 rounded-xl px-4 py-3 text-white">
+        <option value="">-- Выберите запись --</option>
+      </select>
+      <input type="datetime-local" id="reminder_time" required class="w-full bg-zinc-800 border border-white/10 rounded-xl px-4 py-3 text-white"/>
+      <textarea id="reminder_message" placeholder="Сообщение (опционально)" rows="3" class="w-full bg-zinc-800 border border-white/10 rounded-xl px-4 py-3 text-white resize-none"></textarea>
+      <div class="flex gap-3">
+        <button type="submit" class="{{ theme.accentBg }} flex-1 py-3 rounded-xl font-semibold">Создать</button>
+        <button type="button" onclick="closeCreateReminder()" class="flex-1 bg-zinc-800 py-3 rounded-xl font-semibold">Отмена</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tabName = btn.dataset.tab;
+    
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+      tab.classList.add('hidden');
+    });
+    
+    // Show selected tab
+    const selectedTab = document.getElementById(`tab-${tabName}`);
+    if (selectedTab) {
+      selectedTab.classList.remove('hidden');
+    }
+    
+    // Update button styles
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('{{ theme.accentText }}', '{{ theme.accentBg }}');
+      b.classList.add('{{ theme.mutedText }}');
+    });
+    btn.classList.remove('{{ theme.mutedText }}');
+    btn.classList.add('{{ theme.accentText }}', '{{ theme.accentBg }}');
+    
+    // Load tab data
+    if (tabName === 'finances') loadFinances();
+    if (tabName === 'reviews') loadReviews();
+    if (tabName === 'discounts') loadDiscounts();
+    if (tabName === 'reminders') loadReminders();
+    if (tabName === 'referrals') loadReferralInfo();
+  });
+});
+
+// Modal functions
+function openCreateDiscount() {
+  document.getElementById('discount-modal').classList.remove('hidden');
+}
+
+function closeCreateDiscount() {
+  document.getElementById('discount-modal').classList.add('hidden');
+  document.getElementById('discount-form').reset();
+}
+
+function openCreateReminder() {
+  document.getElementById('reminder-modal').classList.remove('hidden');
+  loadBookingsForReminder();
+}
+
+function closeCreateReminder() {
+  document.getElementById('reminder-modal').classList.add('hidden');
+  document.getElementById('reminder-form').reset();
+}
+
+// Finances functions
+async function loadFinances() {
+  try {
+    const res = await fetch('/api/finances/summary');
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('month_income').textContent = '₽ ' + data.month_income.toLocaleString('ru-RU');
+      document.getElementById('week_income').textContent = '₽ ' + data.week_income.toLocaleString('ru-RU');
+      document.getElementById('expenses').textContent = '₽ ' + data.expenses.toLocaleString('ru-RU');
+      document.getElementById('net_income').textContent = '₽ ' + data.net_income.toLocaleString('ru-RU');
+      
+      let html = '';
+      for (const item of data.income_by_service) {
+        const percent = data.month_income > 0 ? (item.amount / data.month_income * 100).toFixed(0) : 0;
+        html += `<div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+          <div class="flex-1"><p class="font-medium">${item.service}</p></div>
+          <p class="font-bold">₽ ${item.amount.toLocaleString('ru-RU')}</p>
+        </div>`;
+      }
+      document.getElementById('service_income').innerHTML = html || '<div class="text-center py-4 {{ theme.mutedText }}">Нет данных</div>';
+      
+      let thtml = '';
+      const tres = await fetch('/api/transactions');
+      const tdata = await tres.json();
+      if (tdata.ok) {
+        for (const t of tdata.transactions.slice(0, 10)) {
+          const date = new Date(t.created_at).toLocaleDateString('ru-RU');
+          const type = t.type === 'income' ? '➕ Доход' : '➖ Расход';
+          const sign = t.type === 'income' ? '+' : '-';
+          thtml += `<tr class="border-b border-white/5">
+            <td class="py-3 px-2">${t.description || 'N/A'}</td>
+            <td class="py-3 px-2">${type}</td>
+            <td class="py-3 px-2 text-right">${sign}₽ ${t.amount.toLocaleString('ru-RU')}</td>
+            <td class="py-3 px-2 text-xs {{ theme.mutedText }}">${date}</td>
+          </tr>`;
+        }
+      }
+      document.getElementById('transactions_list').innerHTML = thtml || '<tr><td colspan="4" class="text-center py-4 {{ theme.mutedText }}">Нет транзакций</td></tr>';
+    }
+  } catch (e) {
+    console.error('Ошибка:', e);
+  }
+}
+
+// Reviews functions
+async function loadReviews() {
+  try {
+    const res = await fetch('/api/reviews');
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('avg_rating').textContent = data.average_rating.toFixed(1);
+      document.getElementById('total_reviews').textContent = data.reviews.length;
+      const masterId = document.querySelector('[data-tab="dashboard"]').closest('div').parentElement.querySelector('[id*="app"]')?.dataset?.masterId || '{{ master.id }}';
+      document.getElementById('review_link').value = window.location.origin + '/reviews/' + masterId;
+      
+      let html = '';
+      for (const r of data.reviews) {
+        const date = new Date(r.created_at).toLocaleDateString('ru-RU');
+        html += `<div class="{{ theme.cardBg }} rounded-2xl p-4 border">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <p class="font-semibold">${r.client_name}</p>
+              <p class="text-amber-400 text-sm">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</p>
+              <p class="text-sm mt-2">${r.comment || '<em>Без комментария</em>'}</p>
+            </div>
+            <button onclick="deleteReview('${r.id}')" class="text-red-400">✕</button>
+          </div>
+        </div>`;
+      }
+      document.getElementById('reviews_list').innerHTML = html || '<div class="{{ theme.cardBg }} rounded-2xl p-6 border text-center {{ theme.mutedText }}">Отзывов не найдено</div>';
+    }
+  } catch (e) {
+    console.error('Ошибка:', e);
+  }
+}
+
+async function deleteReview(id) {
+  if (!confirm('Удалить отзыв?')) return;
+  try {
+    const res = await fetch(`/api/reviews/${id}`, {method: 'DELETE'});
+    if (res.ok) {
+      loadReviews();
+    }
+  } catch (e) {
+    console.error('Ошибка:', e);
+  }
+}
+
+// Discounts functions
+async function loadDiscounts() {
+  try {
+    const res = await fetch('/api/discounts');
+    const data = await res.json();
+    if (data.ok) {
+      const active = data.discounts.filter(d => d.active === 1);
+      let html = '';
+      for (const d of active) {
+        html += `<div class="bg-white/5 rounded-xl p-4 border border-white/10">
+          <div class="flex items-start justify-between mb-2">
+            <div class="flex-1">
+              <h4 class="font-semibold">${d.title}</h4>
+              <p class="{{ theme.mutedText }} text-sm">${d.description || ''}</p>
+            </div>
+            <div class="{{ theme.accentBg }} px-3 py-1 rounded-lg font-bold text-sm">-${d.percent}%</div>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button onclick="toggleDiscount('${d.id}')" class="text-xs {{ theme.mutedText }}">Отключить</button>
+            <button onclick="deleteDiscount('${d.id}')" class="text-xs text-red-400">Удалить</button>
+          </div>
+        </div>`;
+      }
+      document.getElementById('active_discounts').innerHTML = html || '<div class="text-center {{ theme.mutedText }} py-8 col-span-full">Нет активных акций</div>';
+    }
+  } catch (e) {
+    console.error('Ошибка:', e);
+  }
+}
+
+async function toggleDiscount(id) {
+  try {
+    await fetch(`/api/discounts/${id}`, {method: 'PATCH'});
+    loadDiscounts();
+  } catch (e) {
+    console.error('Ошибка:', e);
+  }
+}
+
+async function deleteDiscount(id) {
+  if (!confirm('Удалить?')) return;
+  try {
+    await fetch(`/api/discounts/${id}`, {method: 'DELETE'});
+    loadDiscounts();
+  } catch (e) {
+    console.error('Ошибка:', e);
+  }
+}
+
+// Discount form
+document.getElementById('discount-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const data = {
+    title: document.getElementById('discount_title').value,
+    description: document.getElementById('discount_desc').value,
+    percent: parseInt(document.getElementById('discount_percent').value),
+  };
+  try {
+    const res = await fetch('/api/discounts', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    });
+    if (res.ok) {
+      closeCreateDiscount();
+      loadDiscounts();
+      showToast('Акция создана!', 'success');
+    }
+  } catch (e) {
+    console.error('Ошибка:', e);
+  }
+});
+
+// Reminders functions
+async function loadReminders() {
+  try {
+    const res = await fetch('/api/reminders');
+    const data = await res.json();
+    if (data.ok) {
+      let html = '';
+      for (const r of data.reminders) {
+        const remTime = new Date(r.scheduled_at).toLocaleString('ru-RU');
+        const status = r.sent ? '✅ Отправлено' : '⏰ Запланировано';
+        html += `<div class="{{ theme.cardBg }} rounded-2xl p-4 border">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <p class="font-semibold">${r.client_name || 'Клиент'}</p>
+              <p class="{{ theme.mutedText }} text-sm">📅 ${remTime}</p>
+              ${r.message ? '<p class="text-sm mt-2">' + r.message + '</p>' : ''}
+            </div>
+            <button onclick="deleteReminder('${r.id}')" class="text-red-400">✕</button>
+          </div>
+        </div>`;
+      }
+      document.getElementById('reminders_list').innerHTML = html || '<div class="{{ theme.cardBg }} rounded-2xl p-6 border text-center {{ theme.mutedText }}">Напоминаний не найдено</div>';
+    }
+  } catch (e) {
+    console.error('Ошибка:', e);
+  }
+}
+
+async function loadBookingsForReminder() {
+  try {
+    const res = await fetch('/api/bookings');
+    const data = await res.json();
+    if (data.ok) {
+      let html = '<option value="">-- Выберите запись --</option>';
+      for (const b of data.bookings) {
+        html += `<option value="${b.id}">${b.client_name} - ${b.date} ${b.time}</option>`;
+      }
+      document.getElementById('reminder_booking').innerHTML = html;
+    }
+  } catch (e) {
+    console.error('Ошибка:', e);
+  }
+}
+
+document.getElementById('reminder-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const data = {
+    booking_id: document.getElementById('reminder_booking').value,
+    scheduled_at: document.getElementById('reminder_time').value,
+    message: document.getElementById('reminder_message').value,
+  };
+  try {
+    const res = await fetch('/api/reminders', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    });
+    if (res.ok) {
+      closeCreateReminder();
+      loadReminders();
+      showToast('Напоминание создано!', 'success');
+    }
+  } catch (e) {
+    console.error('Ошибка:', e);
+  }
+});
+
+async function deleteReminder(id) {
+  if (!confirm('Удалить?')) return;
+  try {
+    await fetch(`/api/reminders/${id}`, {method: 'DELETE'});
+    loadReminders();
+  } catch (e) {
+    console.error('Ошибка:', e);
+  }
+}
+
+// Referrals functions
+async function loadReferralInfo() {
+  try {
+    const res = await fetch('/api/referral/info');
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('ref_code').value = data.referral_code;
+      document.getElementById('ref_link').value = data.referral_link;
+      document.getElementById('ref_count').textContent = data.successful_referrals;
+      document.getElementById('ref_months').textContent = data.free_months_earned;
+    }
+  } catch (e) {
+    console.error('Ошибка:', e);
+  }
+}
+
+function copyRefCode() {
+  const code = document.getElementById('ref_code');
+  code.select();
+  document.execCommand('copy');
+  showToast('Код скопирован!', 'success');
+}
+
+function copyRefLink() {
+  const link = document.getElementById('ref_link');
+  link.select();
+  document.execCommand('copy');
+  showToast('Ссылка скопирована!', 'success');
+}
+</script>
+{% endblock %}
